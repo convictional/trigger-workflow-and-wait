@@ -23,7 +23,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 ```
 - uses: convictional/trigger-workflow-and-wait
-  with:"
+  with:
     owner: keithconvictional
     repo: myrepo
     github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
