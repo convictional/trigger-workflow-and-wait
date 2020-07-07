@@ -1,0 +1,28 @@
+name: 'Trigger Workflow and Wait'
+description: 'This action triggers a workflow in another repository and waits for the result.'
+author: 'Convictional'
+branding:
+  icon: 'arrow-right'
+  color: 'yellow'
+inputs:
+  owner:
+    description: "The owner of the repository where the workflow is contained."
+    required: true
+  repo:
+    description: "The repository where the workflow is contained."
+    required: true
+  github_token:
+    description: "The Github access token with access to the repository. Its recommended you put it under secrets."
+    required: true
+  wait_interval:
+    description: "The number of seconds delay between checking for result of run."
+    required: false
+  event_type:
+    description: "The event type that is trigger your workflow on the secondary repository."
+    required: false
+  ref:
+    description: "The reference point. This is either a commit or branch."
+    required: false
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
