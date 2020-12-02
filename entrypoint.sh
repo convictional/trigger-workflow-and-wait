@@ -6,9 +6,8 @@ function usage_docs {
   echo "    owner: keithconvictional"
   echo "    repo: myrepo"
   echo "    github_token: \${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}"
+  echo "    workflow_file_name: main.yaml"
 }
-
-# TODO - Add client_payload
 
 function validate_args {
   wait_interval=10
@@ -46,11 +45,18 @@ function validate_args {
     event_type=$INPUT_EVENT_TYPE
   fi
 
-  ref="master"
-  if [ $INPUT_REF ]
+  if [ -z $INPUT_WORKFLOW_FILE_NAME ]
   then
-    ref=$INPUT_REF
-  fi 
+    echo "Error: Workflow File Name is required"
+    usage_docs
+    exit 1
+  fi
+
+  client_payload=$(echo '{}' | jq)
+  if [ "$INPUT_CLIENT_PAYLOAD" ]
+  then
+    client_payload=$(echo $INPUT_CLIENT_PAYLOAD | jq)
+  fi
 }
 
 function trigger_workflow {
@@ -59,27 +65,34 @@ function trigger_workflow {
     -H "Accept: application/vnd.github.everest-preview+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"event_type\": \"${event_type}\", \"client_payload\": {} }"
+    --data "{\"event_type\": \"${event_type}\", \"client_payload\": $client_payload }"
   sleep $wait_interval
 }
 
 function wait_for_workflow_to_finish {
   # Find the id of the last build
-  last_run_id=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/commits/$ref/check-runs" \
+  last_workflow=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/runs" \
     -H 'Accept: application/vnd.github.antiope-preview+json' \
-    -H "Authorization: Bearer $INPUT_GITHUB_TOKEN" | jq '[.check_runs[].id] | first')
-  echo "The job id is [$last_run_id]."
+    -H "Authorization: Bearer $INPUT_GITHUB_TOKEN" | jq '[.workflow_runs[]] | first')
+  last_workflow_id=$(echo $last_workflow | jq '.id')
+  echo "The workflow id is [$last_workflow_id]."
   echo ""
-  conclusion=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/check-runs/$last_run_id" -H 'Accept: application/vnd.github.antiope-preview+json' -H "Authorization: Bearer $INPUT_GITHUB_TOKEN" | jq '.conclusion')
+  conclusion=$(echo $last_workflow | jq '.conclusion')
+  status=$(echo $last_workflow | jq '.status')
 
-  while [[ $conclusion == "null" ]]
+  while [[ $conclusion == "null" && $status != "\"completed\"" ]]
   do
     sleep $wait_interval
-    conclusion=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/check-runs/$last_run_id" -H 'Accept: application/vnd.github.antiope-preview+json' -H "Authorization: Bearer $INPUT_GITHUB_TOKEN" | jq '.conclusion')
+    workflow=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/runs" \
+      -H 'Accept: application/vnd.github.antiope-preview+json' \
+      -H "Authorization: Bearer $INPUT_GITHUB_TOKEN" | jq '.workflow_runs[] | select(.id == '$last_workflow_id')')
+    conclusion=$(echo $workflow | jq '.conclusion')
+    status=$(echo $workflow | jq '.status')
     echo "Checking conclusion [$conclusion]"
+    echo "Checking status [$status]"
   done
 
-  if [[ $conclusion == "\"success\"" ]]
+  if [[ $conclusion == "\"success\"" && $status == "\"completed\"" ]]
   then
     echo "Yes, success"
   else
