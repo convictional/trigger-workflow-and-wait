@@ -8,6 +8,9 @@ inputs:
   owner:
     description: "The owner of the repository where the workflow is contained."
     required: true
+  ref:
+    description: 'The reference of the workflow run. The reference can be a branch, tag, or a commit SHA'
+    required: true
   repo:
     description: "The repository where the workflow is contained."
     required: true
@@ -23,8 +26,8 @@ inputs:
   workflow_file_name:
     description: "The reference point. For example, you could use main.yml."
     required: true
-  client_payload:
-    description: "JSON payload with extra information about the webhook event that your action or worklow may use. Default: {}"
+  inputs:
+    description: 'Inputs to pass to the workflow, must be a JSON string'
     required: false
 runs:
   using: 'docker'

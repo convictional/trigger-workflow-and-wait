@@ -52,20 +52,20 @@ function validate_args {
     exit 1
   fi
 
-  client_payload=$(echo '{}' | jq)
-  if [ "$INPUT_CLIENT_PAYLOAD" ]
-  then
-    client_payload=$(echo $INPUT_CLIENT_PAYLOAD | jq)
-  fi
+  # client_payload=$(echo '{}' | jq)
+  # if [ "$INPUT_CLIENT_PAYLOAD" ]
+  # then
+  #   client_payload=$(echo $INPUT_CLIENT_PAYLOAD | jq)
+  # fi
 }
 
 function trigger_workflow {
-  echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/dispatches"
-  curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/dispatches" \
+  echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches"
+  curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches" \
     -H "Accept: application/vnd.github.everest-preview+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"event_type\": \"${event_type}\", \"client_payload\": $client_payload }"
+    --data "{\"ref\": \"${INPUT_REF}\", \"inputs\": ${INPUT_INPUTS} }"
   sleep $wait_interval
 }
 
