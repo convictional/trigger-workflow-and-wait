@@ -52,6 +52,12 @@ function validate_args {
     exit 1
   fi
 
+  inputs=$(echo '{}' | jq)
+  if [ "$INPUT_INPUTS" ]
+  then
+    inputs=$(echo $INPUT_INPUTS | jq)
+  fi
+
   # client_payload=$(echo '{}' | jq)
   # if [ "$INPUT_CLIENT_PAYLOAD" ]
   # then
@@ -61,11 +67,12 @@ function validate_args {
 
 function trigger_workflow {
   echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches"
+
   curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches" \
-    -H "Accept: application/vnd.github.everest-preview+json" \
+    -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"ref\": \"${INPUT_REF}\", \"inputs\": ${INPUT_INPUTS} }"
+    --data "{\"ref\":\"${INPUT_REF}\",\"inputs\":${inputs}}"
   sleep $wait_interval
 }
 
