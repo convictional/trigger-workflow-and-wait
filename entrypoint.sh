@@ -57,12 +57,6 @@ function validate_args {
   then
     inputs=$(echo $INPUT_INPUTS | jq)
   fi
-
-  # client_payload=$(echo '{}' | jq)
-  # if [ "$INPUT_CLIENT_PAYLOAD" ]
-  # then
-  #   client_payload=$(echo $INPUT_CLIENT_PAYLOAD | jq)
-  # fi
 }
 
 function trigger_workflow {
