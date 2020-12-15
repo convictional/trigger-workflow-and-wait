@@ -16,6 +16,12 @@ function validate_args {
     wait_interval=$INPUT_WAITING_INTERVAL
   fi
 
+  propagate_failure=true
+  if [ -n "$INPUT_PROPAGATE_FAILURE" ]
+  then
+    propagate_failure=$INPUT_PROPAGATE_FAILURE
+  fi
+
   if [ -z "$INPUT_OWNER" ]
   then
     echo "Error: Owner is a required arugment."
@@ -99,7 +105,11 @@ function wait_for_workflow_to_finish {
   else
     # Alternative "failure"
     echo "Conclusion is not success, its [$conclusion]."
-    exit 1
+    if [ "$propagate_failure" = true ]
+    then
+      echo "Propagating failure to upstream job"
+      exit 1
+    fi
   fi
 }
 

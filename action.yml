@@ -29,6 +29,9 @@ inputs:
   inputs:
     description: 'Inputs to pass to the workflow, must be a JSON string'
     required: false
+  propagate_failure:
+    description: 'Fail current job if downstream job fails. default: true'
+    required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
