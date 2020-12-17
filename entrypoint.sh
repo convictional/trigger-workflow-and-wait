@@ -22,6 +22,12 @@ function validate_args {
     propagate_failure=$INPUT_PROPAGATE_FAILURE
   fi
 
+  wait_only=false
+  if [ -n "$INPUT_WAIT_ONLY" ]
+  then
+    wait_only=$INPUT_WAIT_ONLY
+  fi
+
   if [ -z "$INPUT_OWNER" ]
   then
     echo "Error: Owner is a required arugment."
@@ -115,7 +121,14 @@ function wait_for_workflow_to_finish {
 
 function main {
   validate_args
-  trigger_workflow
+
+  if [ "$wait_only" = false ]
+  then
+    trigger_workflow
+  else
+    echo "wait_only = true, skipping triggering the workflow."
+  fi
+
   wait_for_workflow_to_finish
 }
 
