@@ -22,10 +22,16 @@ function validate_args {
     propagate_failure=$INPUT_PROPAGATE_FAILURE
   fi
 
-  wait_only=false
-  if [ -n "$INPUT_WAIT_ONLY" ]
+  trigger_workflow=true
+  if [ -n "$INPUT_TRIGGER_WORKFLOW" ]
   then
-    wait_only=$INPUT_WAIT_ONLY
+    trigger_workflow=$INPUT_TRIGGER_WORKFLOW
+  fi
+
+  wait_workflow=true
+  if [ -n "$INPUT_WAIT_WORKFLOW" ]
+  then
+    wait_workflow=$INPUT_WAIT_WORKFLOW
   fi
 
   if [ -z "$INPUT_OWNER" ]
@@ -122,14 +128,19 @@ function wait_for_workflow_to_finish {
 function main {
   validate_args
 
-  if [ "$wait_only" = false ]
+  if [ "$trigger_workflow" = true ]
   then
     trigger_workflow
   else
-    echo "wait_only = true, skipping triggering the workflow."
+    echo "Skipping triggering the workflow."
   fi
 
-  wait_for_workflow_to_finish
+  if [ "$wait_workflow" = true ]
+  then
+    wait_for_workflow_to_finish
+  else
+    echo "Skipping waiting for workflow."
+  fi
 }
 
 main

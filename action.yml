@@ -32,8 +32,11 @@ inputs:
   propagate_failure:
     description: 'Fail current job if downstream job fails. default: true'
     required: false
-  wait_only:
-    description: 'Wait without triggering the workflow. default: false'
+  trigger_workflow:
+    description: 'Trigger the specified workflow. default: true'
+    required: false
+  wait_workflow:
+    description: 'Wait for workflow to finish. default: true'
     required: false
 runs:
   using: 'docker'
