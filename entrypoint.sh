@@ -16,6 +16,24 @@ function validate_args {
     wait_interval=$INPUT_WAITING_INTERVAL
   fi
 
+  propagate_failure=true
+  if [ -n "$INPUT_PROPAGATE_FAILURE" ]
+  then
+    propagate_failure=$INPUT_PROPAGATE_FAILURE
+  fi
+
+  trigger_workflow=true
+  if [ -n "$INPUT_TRIGGER_WORKFLOW" ]
+  then
+    trigger_workflow=$INPUT_TRIGGER_WORKFLOW
+  fi
+
+  wait_workflow=true
+  if [ -n "$INPUT_WAIT_WORKFLOW" ]
+  then
+    wait_workflow=$INPUT_WAIT_WORKFLOW
+  fi
+
   if [ -z "$INPUT_OWNER" ]
   then
     echo "Error: Owner is a required arugment."
@@ -52,20 +70,21 @@ function validate_args {
     exit 1
   fi
 
-  client_payload=$(echo '{}' | jq)
-  if [ "$INPUT_CLIENT_PAYLOAD" ]
+  inputs=$(echo '{}' | jq)
+  if [ "$INPUT_INPUTS" ]
   then
-    client_payload=$(echo $INPUT_CLIENT_PAYLOAD | jq)
+    inputs=$(echo $INPUT_INPUTS | jq)
   fi
 }
 
 function trigger_workflow {
-  echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/dispatches"
-  curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/dispatches" \
-    -H "Accept: application/vnd.github.everest-preview+json" \
+  echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches"
+
+  curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/dispatches" \
+    -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"event_type\": \"${event_type}\", \"client_payload\": $client_payload }"
+    --data "{\"ref\":\"${INPUT_REF}\",\"inputs\":${inputs}}"
   sleep $wait_interval
 }
 
@@ -98,14 +117,30 @@ function wait_for_workflow_to_finish {
   else
     # Alternative "failure"
     echo "Conclusion is not success, its [$conclusion]."
-    exit 1
+    if [ "$propagate_failure" = true ]
+    then
+      echo "Propagating failure to upstream job"
+      exit 1
+    fi
   fi
 }
 
 function main {
   validate_args
-  trigger_workflow
-  wait_for_workflow_to_finish
+
+  if [ "$trigger_workflow" = true ]
+  then
+    trigger_workflow
+  else
+    echo "Skipping triggering the workflow."
+  fi
+
+  if [ "$wait_workflow" = true ]
+  then
+    wait_for_workflow_to_finish
+  else
+    echo "Skipping waiting for workflow."
+  fi
 }
 
 main
