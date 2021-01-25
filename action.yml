@@ -8,20 +8,17 @@ inputs:
   owner:
     description: "The owner of the repository where the workflow is contained."
     required: true
-  ref:
-    description: 'The reference of the workflow run. The reference can be a branch, tag, or a commit SHA'
-    required: true
   repo:
     description: "The repository where the workflow is contained."
     required: true
   github_token:
     description: "The Github access token with access to the repository. Its recommended you put it under secrets."
     required: true
+  ref:
+    description: 'The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. Default: main'
+    required: false
   wait_interval:
     description: "The number of seconds delay between checking for result of run."
-    required: false
-  event_type:
-    description: "The event type that is trigger your workflow on the secondary repository."
     required: false
   workflow_file_name:
     description: "The reference point. For example, you could use main.yml."
