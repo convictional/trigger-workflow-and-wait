@@ -45,7 +45,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
     github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
     workflow_file_name: main.yml
     ref: release-branch
-    wait_interval: 1
+    wait_interval: 10
     inputs: '{}'
     propagate_failure: false
     trigger_workflow: true
@@ -58,7 +58,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 You can test out the action locally by cloning the repository to your computer. You can run:
 
 ```
-INPUT_WAITING_INTERVAL=1 \
+INPUT_WAITING_INTERVAL=10 \
   INPUT_PROPAGATE_FAILURE=false \
   INPUT_TRIGGER_WORKFLOW=true \
   INPUT_WORKFLOW_FILE_NAME="main.yml" \
