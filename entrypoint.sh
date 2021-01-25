@@ -7,10 +7,10 @@ function usage_docs {
   echo "    repo: myrepo"
   echo "    github_token: \${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}"
   echo "    workflow_file_name: main.yaml"
-}
+} # TODO - Update
 
 function validate_args {
-  wait_interval=10
+  wait_interval=10 # Waits for 10 seconds
   if [ "$INPUT_WAITING_INTERVAL" ]
   then
     wait_interval=$INPUT_WAITING_INTERVAL
@@ -36,14 +36,14 @@ function validate_args {
 
   if [ -z "$INPUT_OWNER" ]
   then
-    echo "Error: Owner is a required arugment."
+    echo "Error: Owner is a required argument."
     usage_docs
     exit 1
   fi
 
   if [ -z "$INPUT_REPO" ]
   then
-    echo "Error: Repo is a required arugment."
+    echo "Error: Repo is a required argument."
     usage_docs
     exit 1
   fi
@@ -55,12 +55,6 @@ function validate_args {
     echo "token requires repo access."
     usage_docs
     exit 1
-  fi
-
-  event_type="ping"
-  if [ "$INPUT_EVENT_TYPE" ]
-  then
-    event_type=$INPUT_EVENT_TYPE
   fi
 
   if [ -z $INPUT_WORKFLOW_FILE_NAME ]
@@ -75,6 +69,12 @@ function validate_args {
   then
     inputs=$(echo $INPUT_INPUTS | jq)
   fi
+
+  ref="main"
+  if [ "$INPUT_REF" ]
+  then
+    ref=$INPUT_REF
+  fi
 }
 
 function trigger_workflow {
@@ -84,7 +84,8 @@ function trigger_workflow {
     -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"ref\":\"${INPUT_REF}\",\"inputs\":${inputs}}"
+    --data "{\"ref\":\"${ref}\",\"inputs\":${inputs}}"
+  echo "Sleeping for $wait_interval seconds"
   sleep $wait_interval
 }
 
@@ -101,6 +102,7 @@ function wait_for_workflow_to_finish {
 
   while [[ $conclusion == "null" && $status != "\"completed\"" ]]
   do
+    echo "Sleeping for $wait_interval seconds"
     sleep $wait_interval
     workflow=$(curl -X GET "https://api.github.com/repos/$INPUT_OWNER/$INPUT_REPO/actions/workflows/$INPUT_WORKFLOW_FILE_NAME/runs" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
