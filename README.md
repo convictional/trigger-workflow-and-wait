@@ -102,7 +102,7 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
 
 ### Timing
 
-The actions dispatch is an asynchronous job and it at times can take a few seconds to start. If you do not have a delay, it may be started after you have check if it was successful. ie. Start dispatch call --> No delay --> Check if successful --> Actually starts. If the workflow has run before, it will just complete immediately as a successful run. You can solve this by simply increasing the delay to a few seconds. By default it is 10 seconds. This is also large delays between checks which helps the traffic to the Github API.
+The actions dispatch is an asynchronous job and it at times can take a few seconds to start. If you do not have a delay, it may be started after the action has checked if it was successful. ie. Start dispatch call --> No delay --> Check if successful --> Actually starts. If the workflow has run before, it will just complete immediately as a successful run. You can solve this by simply increasing the delay to a few seconds. By default it is 10 seconds. Creating a large delay between checks will help the traffic to the Github API.
 
 
 ### Changes

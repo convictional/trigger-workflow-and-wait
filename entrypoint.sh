@@ -7,7 +7,7 @@ function usage_docs {
   echo "    repo: myrepo"
   echo "    github_token: \${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}"
   echo "    workflow_file_name: main.yaml"
-} # TODO - Update
+}
 
 function validate_args {
   wait_interval=10 # Waits for 10 seconds
