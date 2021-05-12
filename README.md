@@ -27,7 +27,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 ### Simple
 
-```
+```yaml
 - uses: convictional/trigger-workflow-and-wait@v1.3.0
   with:
     owner: keithconvictional
@@ -37,7 +37,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 ### All Options
 
-```
+```yaml
 - uses: convictional/trigger-workflow-and-wait@v1.3.0
   with:
     owner: keithconvictional
@@ -57,7 +57,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 You can test out the action locally by cloning the repository to your computer. You can run:
 
-```
+```shell
 INPUT_WAITING_INTERVAL=10 \
   INPUT_PROPAGATE_FAILURE=false \
   INPUT_TRIGGER_WORKFLOW=true \
@@ -72,7 +72,7 @@ INPUT_WAITING_INTERVAL=10 \
 
 You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:
 
-```
+```shell
 name: Main
 on:
   workflow_dispatch
@@ -88,7 +88,7 @@ jobs:
 
 You can see the example [here](https://github.com/keithconvictional/trigger-workflow-and-wait-example-repo1/blob/master/.github/workflows/main.yml). For testing a failure case, just add this line after the sleep:
 
-```
+```yaml
 ...
 - name: Pause for 25 seconds
   run: |
@@ -97,19 +97,17 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
     exit 1
 ```
 
-
 ## Potential Issues
 
 ### Timing
 
 The actions dispatch is an asynchronous job and it at times can take a few seconds to start. If you do not have a delay, it may be started after the action has checked if it was successful. ie. Start dispatch call --> No delay --> Check if successful --> Actually starts. If the workflow has run before, it will just complete immediately as a successful run. You can solve this by simply increasing the delay to a few seconds. By default it is 10 seconds. Creating a large delay between checks will help the traffic to the Github API.
 
-
 ### Changes
 
 If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
 
-```
+```yaml
 - uses: convictional/trigger-workflow-and-wait@v1.3.0
   with:
     owner: keithconvictional
