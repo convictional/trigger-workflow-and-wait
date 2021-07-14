@@ -96,6 +96,7 @@ wait_for_workflow_to_finish() {
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
   last_workflow_id=$(echo "${last_workflow}" | jq '.id')
   echo "The workflow id is [${last_workflow_id}]."
+  echo "::set-output name=workflow_id::$last_workflow_id"
   echo ""
   conclusion=$(echo "${last_workflow}" | jq '.conclusion')
   status=$(echo "${last_workflow}" | jq '.status')
