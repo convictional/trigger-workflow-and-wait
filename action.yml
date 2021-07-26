@@ -36,8 +36,10 @@ inputs:
     description: 'Wait for workflow to finish. default: true'
     required: false
 outputs:
-  Workflow_id:
+  workflow_id:
     description: The ID of the workflow that was triggered by this action
+  workflow_url:
+    description: The URL of the workflow that was triggered by this action
 runs:
   using: 'docker'
   image: 'Dockerfile'
