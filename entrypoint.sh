@@ -10,8 +10,8 @@ usage_docs() {
   echo "    github_token: \${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}"
   echo "    workflow_file_name: main.yaml"
 }
-github_api_url = "${API_URL:-https://api.github.com}"
-github_server_url = "${SERVER_URL:-https://github.com}"
+github_api_url="${API_URL:-https://api.github.com}"
+github_server_url="${SERVER_URL:-https://github.com}"
 
 validate_args() {
   wait_interval=10 # Waits for 10 seconds
