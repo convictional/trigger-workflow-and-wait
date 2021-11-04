@@ -87,6 +87,8 @@ trigger_workflow() {
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
     --data "{\"ref\":\"${ref}\",\"inputs\":${inputs}}"
+  echo "Sleeping for ${wait_interval} seconds"
+  sleep $wait_interval
 }
 
 wait_for_workflow_to_finish() {
