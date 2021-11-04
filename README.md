@@ -14,13 +14,14 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `owner`               | True       | N/A         | The owner of the repository where the workflow is contained. |
 | `repo`                | True       | N/A         | The repository where the workflow is contained. |
 | `github_token`        | True       | N/A         | The Github access token with access to the repository. Its recommended you put it under secrets. |
-| `workflow_file_name`  | True      | N/A      | The reference point. For example, you could use main.yml. |
-| `ref`       | False      | main          | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `waiting_interval`       | False      | 10          | The number of seconds delay between checking for result of run. |
-| `inputs`  | False       | `{}`         | Inputs to pass to the workflow, must be a JSON string |
-| `propagate_failure`      | False      | `true`        | Fail current job if downstream job fails. |
-| `trigger_workflow`       | False      | `true`        | Trigger the specified workflow. |
-| `wait_workflow`          | False      | `true`        | Wait for workflow to finish. |
+| `workflow_file_name`  | True       | N/A         | The reference point. For example, you could use main.yml. |
+| `github_user`         | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
+| `ref`                 | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
+| `waiting_interval`    | False      | 10          | The number of seconds delay between checking for result of run. |
+| `inputs`              | False      | `{}`        | Inputs to pass to the workflow, must be a JSON string |
+| `propagate_failure`   | False      | `true`      | Fail current job if downstream job fails. |
+| `trigger_workflow`    | False      | `true`      | Trigger the specified workflow. |
+| `wait_workflow`       | False      | `true`      | Wait for workflow to finish. |
 
 
 ## Example
@@ -43,6 +44,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
     owner: keithconvictional
     repo: myrepo
     github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+    github_user: github-user
     workflow_file_name: main.yml
     ref: release-branch
     wait_interval: 10
@@ -62,6 +64,7 @@ INPUT_WAITING_INTERVAL=10 \
   INPUT_PROPAGATE_FAILURE=false \
   INPUT_TRIGGER_WORKFLOW=true \
   INPUT_WORKFLOW_FILE_NAME="main.yml" \
+  INPUT_GITHUB_USER="github-user" \
   INPUT_WAIT_WORKFLOW=true \
   INPUT_OWNER="keithconvictional" \
   INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
