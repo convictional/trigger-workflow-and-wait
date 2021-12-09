@@ -16,9 +16,9 @@ GITHUB_SERVER_URL="${SERVER_URL:-https://github.com}"
 
 validate_args() {
   wait_interval=10 # Waits for 10 seconds
-  if [ "${INPUT_WAITING_INTERVAL}" ]
+  if [ "${INPUT_WAIT_INTERVAL}" ]
   then
-    wait_interval=${INPUT_WAITING_INTERVAL}
+    wait_interval=${INPUT_WAIT_INTERVAL}
   fi
 
   propagate_failure=true
@@ -97,7 +97,7 @@ trigger_workflow() {
 wait_for_workflow_to_finish() {
   # Find the id of the last run using filters to identify the workflow triggered by this action
   echo "Getting the ID of the workflow..."
-  query="event=workflow_dispatch&status=queued"
+  query="event=workflow_dispatch&status=in_progress"
   if [ "$INPUT_GITHUB_USER" ]
   then
     query="${query}&actor=${INPUT_GITHUB_USER}"

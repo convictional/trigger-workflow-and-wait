@@ -17,7 +17,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `workflow_file_name`  | True       | N/A         | The reference point. For example, you could use main.yml. |
 | `github_user`         | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
 | `ref`                 | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `waiting_interval`    | False      | 10          | The number of seconds delay between checking for result of run. |
+| `wait_interval`       | False      | 10          | The number of seconds delay between checking for result of run. |
 | `inputs`              | False      | `{}`        | Inputs to pass to the workflow, must be a JSON string |
 | `propagate_failure`   | False      | `true`      | Fail current job if downstream job fails. |
 | `trigger_workflow`    | False      | `true`      | Trigger the specified workflow. |
