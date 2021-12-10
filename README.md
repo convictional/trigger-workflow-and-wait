@@ -60,17 +60,17 @@ When deploying an app you may need to deploy additional services, this Github Ac
 You can test out the action locally by cloning the repository to your computer. You can run:
 
 ```shell
-INPUT_WAITING_INTERVAL=10 \
-  INPUT_PROPAGATE_FAILURE=false \
-  INPUT_TRIGGER_WORKFLOW=true \
-  INPUT_WORKFLOW_FILE_NAME="main.yml" \
-  INPUT_GITHUB_USER="github-user" \
-  INPUT_WAIT_WORKFLOW=true \
-  INPUT_OWNER="keithconvictional" \
-  INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
-  INPUT_GITHUB_TOKEN="<REDACTED>" \
-  INPUT_INPUTS='{}' \
-  bash entrypoint.sh
+INPUT_WAIT_INTERVAL=10 \
+INPUT_PROPAGATE_FAILURE=false \
+INPUT_TRIGGER_WORKFLOW=true \
+INPUT_WORKFLOW_FILE_NAME="main.yml" \
+INPUT_GITHUB_USER="github-user" \
+INPUT_WAIT_WORKFLOW=true \
+INPUT_OWNER="keithconvictional" \
+INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
+INPUT_GITHUB_TOKEN="<REDACTED>" \
+INPUT_INPUTS='{}' \
+bash entrypoint.sh
 ```
 
 You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:
@@ -101,10 +101,6 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
 ```
 
 ## Potential Issues
-
-### Timing
-
-The actions dispatch is an asynchronous job and it at times can take a few seconds to start. If you do not have a delay, it may be started after the action has checked if it was successful. ie. Start dispatch call --> No delay --> Check if successful --> Actually starts. If the workflow has run before, it will just complete immediately as a successful run. You can solve this by simply increasing the delay to a few seconds. By default it is 10 seconds. Creating a large delay between checks will help the traffic to the Github API.
 
 ### Changes
 
