@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 usage_docs() {
@@ -39,6 +39,12 @@ validate_args() {
     wait_workflow=${INPUT_WAIT_WORKFLOW}
   fi
 
+  last_workflow_interval=0
+  if [ -n "${INPUT_LAST_WORKFLOW_INTERVAL}" ]
+  then
+    last_workflow_interval=${INPUT_LAST_WORKFLOW_INTERVAL}
+  fi
+
   if [ -z "${INPUT_OWNER}" ]
   then
     echo "Error: Owner is a required argument."
@@ -69,10 +75,10 @@ validate_args() {
     exit 1
   fi
 
-  inputs=$(echo '{}' | jq)
-  if [ "${INPUT_INPUTS}" ]
+  client_payload=$(echo '{}' | jq)
+  if [ "${INPUT_CLIENT_PAYLOAD}" ]
   then
-    inputs=$(echo "${INPUT_INPUTS}" | jq)
+    client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq)
   fi
 
   ref="main"
@@ -84,12 +90,14 @@ validate_args() {
 
 trigger_workflow() {
   echo "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  echo --data "{\"ref\":\"${ref}\",\"client_payload\":${client_payload}}"
 
   curl --fail -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${inputs}}"
+    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+
   echo "Sleeping for ${wait_interval} seconds"
   sleep $wait_interval
 }
@@ -97,27 +105,37 @@ trigger_workflow() {
 wait_for_workflow_to_finish() {
   # Find the id of the last run using filters to identify the workflow triggered by this action
   echo "Getting the ID of the workflow..."
+
   query="event=workflow_dispatch&status=in_progress"
   if [ "$INPUT_GITHUB_USER" ]
   then
     query="${query}&actor=${INPUT_GITHUB_USER}"
   fi
+
   last_workflow="null"
+
   while [[ "$last_workflow" == "null" ]]
   do
+    echo "Sleeping for \"${last_workflow_interval}\" seconds"
+    sleep ${last_workflow_interval}
+
     echo "Using the following params to filter the workflow runs to get the triggered run id -"
     echo "Query params: ${query}"
+
     last_workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
   done
+
   last_workflow_id=$(echo "${last_workflow}" | jq '.id')
   last_workflow_url="${GITHUB_SERVER_URL}/${INPUT_OWNER}/${INPUT_REPO}/actions/runs/${last_workflow_id}"
+
   echo "The workflow id is [${last_workflow_id}]."
   echo "The workflow logs can be found at ${last_workflow_url}"
   echo "::set-output name=workflow_id::${last_workflow_id}"
   echo "::set-output name=workflow_url::${last_workflow_url}"
   echo ""
+
   conclusion=$(echo "${last_workflow}" | jq '.conclusion')
   status=$(echo "${last_workflow}" | jq '.status')
 
@@ -125,11 +143,13 @@ wait_for_workflow_to_finish() {
   do
     echo "Sleeping for \"${wait_interval}\" seconds"
     sleep "${wait_interval}"
+
     workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '.workflow_runs[] | select(.id == '${last_workflow_id}')')
     conclusion=$(echo "${workflow}" | jq '.conclusion')
     status=$(echo "${workflow}" | jq '.status')
+
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
   done
@@ -140,6 +160,7 @@ wait_for_workflow_to_finish() {
   else
     # Alternative "failure"
     echo "Conclusion is not success, its [${conclusion}]."
+
     if [ "${propagate_failure}" = true ]
     then
       echo "Propagating failure to upstream job"

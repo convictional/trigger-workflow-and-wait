@@ -9,19 +9,20 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 ## Arguments
 
-| Argument Name         | Required   | Default     | Description           |
-| --------------------- | ---------- | ----------- | --------------------- |
-| `owner`               | True       | N/A         | The owner of the repository where the workflow is contained. |
-| `repo`                | True       | N/A         | The repository where the workflow is contained. |
-| `github_token`        | True       | N/A         | The Github access token with access to the repository. Its recommended you put it under secrets. |
-| `workflow_file_name`  | True       | N/A         | The reference point. For example, you could use main.yml. |
-| `github_user`         | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
-| `ref`                 | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `wait_interval`       | False      | 10          | The number of seconds delay between checking for result of run. |
-| `inputs`              | False      | `{}`        | Inputs to pass to the workflow, must be a JSON string |
-| `propagate_failure`   | False      | `true`      | Fail current job if downstream job fails. |
-| `trigger_workflow`    | False      | `true`      | Trigger the specified workflow. |
-| `wait_workflow`       | False      | `true`      | Wait for workflow to finish. |
+| Argument Name            | Required   | Default     | Description           |
+| ---------------------    | ---------- | ----------- | --------------------- |
+| `owner`                  | True       | N/A         | The owner of the repository where the workflow is contained. |
+| `repo`                   | True       | N/A         | The repository where the workflow is contained. |
+| `github_token`           | True       | N/A         | The Github access token with access to the repository. Its recommended you put it under secrets. |
+| `workflow_file_name`     | True       | N/A         | The reference point. For example, you could use main.yml. |
+| `github_user`            | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
+| `ref`                    | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
+| `wait_interval`          | False      | 10          | The number of seconds delay between checking for result of run. |
+| `client_payload`         | False      | `{}`        | Payload to pass to the workflow, must be a JSON string |
+| `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
+| `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
+| `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
+| `last_workflow_interval` | False      | 0           | The number of seconds delay between checking for the last workflow. default: 0 |
 
 
 ## Example
@@ -48,10 +49,11 @@ When deploying an app you may need to deploy additional services, this Github Ac
     workflow_file_name: main.yml
     ref: release-branch
     wait_interval: 10
-    inputs: '{}'
+    client_payload: '{}'
     propagate_failure: false
     trigger_workflow: true
     wait_workflow: true
+    last_workflow_interval: 1
 ```
 
 
@@ -66,10 +68,11 @@ INPUT_TRIGGER_WORKFLOW=true \
 INPUT_WORKFLOW_FILE_NAME="main.yml" \
 INPUT_GITHUB_USER="github-user" \
 INPUT_WAIT_WORKFLOW=true \
+INPUT_LAST_WORKFLOW_INTERVAL=1 \
 INPUT_OWNER="keithconvictional" \
 INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
 INPUT_GITHUB_TOKEN="<REDACTED>" \
-INPUT_INPUTS='{}' \
+INPUT_CLIENT_PAYLOAD='{}' \
 bash entrypoint.sh
 ```
 

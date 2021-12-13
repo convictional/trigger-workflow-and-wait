@@ -26,8 +26,8 @@ inputs:
   workflow_file_name:
     description: "The reference point. For example, you could use main.yml."
     required: true
-  inputs:
-    description: 'Inputs to pass to the workflow, must be a JSON string'
+  client_payload:
+    description: 'Payload to pass to the workflow, must be a JSON string'
     required: false
   propagate_failure:
     description: 'Fail current job if downstream job fails. default: true'
@@ -37,6 +37,9 @@ inputs:
     required: false
   wait_workflow:
     description: 'Wait for workflow to finish. default: true'
+    required: false
+  last_workflow_interval:
+    description: 'The number of seconds delay between checking for the last workflow. default: 0'
     required: false
 outputs:
   workflow_id:
