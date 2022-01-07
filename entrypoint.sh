@@ -88,78 +88,84 @@ validate_args() {
   fi
 }
 
-trigger_workflow() {
-  echo "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
-  echo --data "{\"ref\":\"${ref}\",\"client_payload\":${client_payload}}"
+# Return the ids of the most recent workflow runs, optionally filtered by user
+get-workflow-runs() {
+  since=${1:?}
 
-  curl --fail -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
+  query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+'&actor='}${INPUT_GITHUB_USER}&per_page=100"
+
+  echo "Getting workflow runs using query: ${query}" >&2
+
+  curl -sSL --fail -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
+    -H 'Accept: application/vnd.github.antiope-preview+json' \
+    -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" |
+  jq '.workflow_runs[].id' |
+  sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
+}
+
+trigger_workflow() {
+  START_TIME=$(date +%s)
+  SINCE=$(date -u -Iseconds -d "@$((START_TIME - 120))") # Two minutes ago, to overcome clock skew
+
+  OLD_RUNS=$(get-workflow-runs "$SINCE")
+
+  echo >&2 "Triggering workflow:"
+  echo >&2 "  ${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  echo >&2 "  --data" "{\"ref\":\"${ref}\",\"client_payload\":${client_payload}}"
+
+  curl >&2 -sSL -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
     --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
 
-  echo "Sleeping for ${wait_interval} seconds"
-  sleep $wait_interval
+  NEW_RUNS=$OLD_RUNS
+  while [ "$NEW_RUNS" = "$OLD_RUNS" ]
+  do
+    echo >&2 "Sleeping for ${wait_interval} seconds"
+    sleep "$wait_interval"
+    NEW_RUNS=$(get-workflow-runs "$SINCE")
+  done
+
+  # Return new run ids
+  join -v2 <(echo "$OLD_RUNS") <(echo "$NEW_RUNS")
 }
 
 wait_for_workflow_to_finish() {
-  # Find the id of the last run using filters to identify the workflow triggered by this action
-  echo "Getting the ID of the workflow..."
-
-  query="event=workflow_dispatch&status=in_progress"
-  if [ "$INPUT_GITHUB_USER" ]
-  then
-    query="${query}&actor=${INPUT_GITHUB_USER}"
-  fi
-
-  last_workflow="null"
-
-  while [[ "$last_workflow" == "null" ]]
-  do
-    echo "Sleeping for \"${last_workflow_interval}\" seconds"
-    sleep ${last_workflow_interval}
-
-    echo "Using the following params to filter the workflow runs to get the triggered run id -"
-    echo "Query params: ${query}"
-
-    last_workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
-      -H 'Accept: application/vnd.github.antiope-preview+json' \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
-  done
-
-  last_workflow_id=$(echo "${last_workflow}" | jq '.id')
+  last_workflow_id=${1:?}
   last_workflow_url="${GITHUB_SERVER_URL}/${INPUT_OWNER}/${INPUT_REPO}/actions/runs/${last_workflow_id}"
 
+  echo "Waiting for workflow to finish:"
   echo "The workflow id is [${last_workflow_id}]."
   echo "The workflow logs can be found at ${last_workflow_url}"
   echo "::set-output name=workflow_id::${last_workflow_id}"
   echo "::set-output name=workflow_url::${last_workflow_url}"
   echo ""
 
-  conclusion=$(echo "${last_workflow}" | jq '.conclusion')
-  status=$(echo "${last_workflow}" | jq '.status')
+  conclusion=null
+  status=
 
-  while [[ "${conclusion}" == "null" && "${status}" != "\"completed\"" ]]
+  while [[ "${conclusion}" == "null" && "${status}" != "completed" ]]
   do
     echo "Sleeping for \"${wait_interval}\" seconds"
     sleep "${wait_interval}"
 
-    workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
+    workflow=$(curl -sSL --fail -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '.workflow_runs[] | select(.id == '${last_workflow_id}')')
-    conclusion=$(echo "${workflow}" | jq '.conclusion')
-    status=$(echo "${workflow}" | jq '.status')
+    conclusion=$(echo "${workflow}" | jq -r '.conclusion')
+    status=$(echo "${workflow}" | jq -r '.status')
 
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
   done
 
-  if [[ "${conclusion}" == "\"success\"" && "${status}" == "\"completed\"" ]]
+  if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
   then
     echo "Yes, success"
   else
     # Alternative "failure"
-    echo "Conclusion is not success, its [${conclusion}]."
+    echo "Conclusion is not success, it's [${conclusion}]."
 
     if [ "${propagate_failure}" = true ]
     then
@@ -174,14 +180,17 @@ main() {
 
   if [ "${trigger_workflow}" = true ]
   then
-    trigger_workflow
+    run_ids=$(trigger_workflow)
   else
     echo "Skipping triggering the workflow."
   fi
 
   if [ "${wait_workflow}" = true ]
   then
-    wait_for_workflow_to_finish
+    for run_id in $run_ids
+    do
+      wait_for_workflow_to_finish "$run_id"
+    done
   else
     echo "Skipping waiting for workflow."
   fi
