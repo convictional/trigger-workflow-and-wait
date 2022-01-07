@@ -88,6 +88,24 @@ validate_args() {
   fi
 }
 
+api() {
+  path=$1; shift
+  if response=$(curl --fail-with-body -sSL \
+      "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
+      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+      -H 'Accept: application/vnd.github.v3+json' \
+      -H 'Content-Type: application/json' \
+      "$@")
+  then
+    echo "$response"
+  else
+    echo >&2 "api failed:"
+    echo >&2 "path: $path"
+    echo >&2 "response: $response"
+    exit 1
+  fi
+}
+
 # Return the ids of the most recent workflow runs, optionally filtered by user
 get-workflow-runs() {
   since=${1:?}
@@ -96,9 +114,7 @@ get-workflow-runs() {
 
   echo "Getting workflow runs using query: ${query}" >&2
 
-  curl -sSL --fail -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
-    -H 'Accept: application/vnd.github.antiope-preview+json' \
-    -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" |
+  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" |
   jq '.workflow_runs[].id' |
   sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
 }
@@ -110,13 +126,10 @@ trigger_workflow() {
   OLD_RUNS=$(get-workflow-runs "$SINCE")
 
   echo >&2 "Triggering workflow:"
-  echo >&2 "  ${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
-  echo >&2 "  --data" "{\"ref\":\"${ref}\",\"client_payload\":${client_payload}}"
+  echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  echo >&2 "  {\"ref\":\"${ref}\",\"client_payload\":${client_payload}}"
 
-  curl >&2 -sSL -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
     --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
 
   NEW_RUNS=$OLD_RUNS
@@ -150,9 +163,7 @@ wait_for_workflow_to_finish() {
     echo "Sleeping for \"${wait_interval}\" seconds"
     sleep "${wait_interval}"
 
-    workflow=$(curl -sSL --fail -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
-      -H 'Accept: application/vnd.github.antiope-preview+json' \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '.workflow_runs[] | select(.id == '${last_workflow_id}')')
+    workflow=$(api "runs/$last_workflow_id")
     conclusion=$(echo "${workflow}" | jq -r '.conclusion')
     status=$(echo "${workflow}" | jq -r '.status')
 
