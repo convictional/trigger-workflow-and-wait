@@ -73,7 +73,7 @@ INPUT_OWNER="keithconvictional" \
 INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
 INPUT_GITHUB_TOKEN="<REDACTED>" \
 INPUT_CLIENT_PAYLOAD='{}' \
-bash entrypoint.sh
+busybox sh entrypoint.sh
 ```
 
 You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:
