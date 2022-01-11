@@ -107,7 +107,7 @@ api() {
 }
 
 # Return the ids of the most recent workflow runs, optionally filtered by user
-get-workflow-runs() {
+get_workflow_runs() {
   since=${1:?}
 
   query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+'&actor='}${INPUT_GITHUB_USER}&per_page=100"
@@ -123,7 +123,7 @@ trigger_workflow() {
   START_TIME=$(date +%s)
   SINCE=$(date -u -Iseconds -d "@$((START_TIME - 120))") # Two minutes ago, to overcome clock skew
 
-  OLD_RUNS=$(get-workflow-runs "$SINCE")
+  OLD_RUNS=$(get_workflow_runs "$SINCE")
 
   echo >&2 "Triggering workflow:"
   echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
@@ -137,7 +137,7 @@ trigger_workflow() {
   do
     echo >&2 "Sleeping for ${wait_interval} seconds"
     sleep "$wait_interval"
-    NEW_RUNS=$(get-workflow-runs "$SINCE")
+    NEW_RUNS=$(get_workflow_runs "$SINCE")
   done
 
   # Return new run ids
