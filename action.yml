@@ -20,7 +20,7 @@ inputs:
   ref:
     description: 'The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. Default: main'
     required: false
-  wait_interval:
+  waiting_interval:
     description: "The number of seconds delay between checking for result of run."
     required: false
   workflow_file_name:

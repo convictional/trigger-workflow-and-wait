@@ -47,7 +47,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
     github_user: github-user
     workflow_file_name: main.yml
     ref: release-branch
-    wait_interval: 10
+    waiting_interval: 10
     inputs: '{}'
     propagate_failure: false
     trigger_workflow: true
