@@ -17,8 +17,8 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `workflow_file_name`  | True       | N/A         | The reference point. For example, you could use main.yml. |
 | `github_user`         | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
 | `ref`                 | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `waiting_interval`    | False      | 10          | The number of seconds delay between checking for result of run. |
-| `inputs`              | False      | `{}`        | Inputs to pass to the workflow, must be a JSON string |
+| `wait_interval`       | False      | 10          | The number of seconds delay between checking for result of run. |
+| `inputs`              | False      | `{}`        | Inputs to pass to the workflow, must be a JSON string. Ensure values are strings (booleans not allowed). |
 | `propagate_failure`   | False      | `true`      | Fail current job if downstream job fails. |
 | `trigger_workflow`    | False      | `true`      | Trigger the specified workflow. |
 | `wait_workflow`       | False      | `true`      | Wait for workflow to finish. |
@@ -29,7 +29,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### Simple
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.5.0
   with:
     owner: keithconvictional
     repo: myrepo
@@ -39,7 +39,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### All Options
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.5.0
   with:
     owner: keithconvictional
     repo: myrepo
@@ -111,7 +111,7 @@ The actions dispatch is an asynchronous job and it at times can take a few secon
 If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.5.0
   with:
     owner: keithconvictional
     repo: myrepo
