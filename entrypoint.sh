@@ -110,7 +110,7 @@ api() {
 get_workflow_runs() {
   since=${1:?}
 
-  query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+'&actor='}${INPUT_GITHUB_USER}&per_page=100"
+  query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+&actor=}${INPUT_GITHUB_USER}&per_page=100"
 
   echo "Getting workflow runs using query: ${query}" >&2
 
