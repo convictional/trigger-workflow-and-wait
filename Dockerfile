@@ -1,5 +1,4 @@
-# https://hub.docker.com/_/alpine
-FROM alpine:latest
+FROM alpine:3.15.0
 
 RUN apk update
 RUN apk --no-cache add curl jq coreutils
