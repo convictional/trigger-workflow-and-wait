@@ -30,7 +30,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### Simple
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.0
   with:
     owner: keithconvictional
     repo: myrepo
@@ -40,7 +40,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### All Options
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.0
   with:
     owner: keithconvictional
     repo: myrepo
@@ -63,17 +63,17 @@ You can test out the action locally by cloning the repository to your computer. 
 
 ```shell
 INPUT_WAIT_INTERVAL=10 \
-INPUT_PROPAGATE_FAILURE=false \
-INPUT_TRIGGER_WORKFLOW=true \
-INPUT_WORKFLOW_FILE_NAME="main.yml" \
-INPUT_GITHUB_USER="github-user" \
-INPUT_WAIT_WORKFLOW=true \
-INPUT_LAST_WORKFLOW_INTERVAL=1 \
-INPUT_OWNER="keithconvictional" \
-INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
-INPUT_GITHUB_TOKEN="<REDACTED>" \
-INPUT_CLIENT_PAYLOAD='{}' \
-busybox sh entrypoint.sh
+  INPUT_PROPAGATE_FAILURE=false \
+  INPUT_TRIGGER_WORKFLOW=true \
+  INPUT_WORKFLOW_FILE_NAME="main.yml" \
+  INPUT_GITHUB_USER="github-user" \
+  INPUT_WAIT_WORKFLOW=true \
+  INPUT_LAST_WORKFLOW_INTERVAL=1 \
+  INPUT_OWNER="keithconvictional" \
+  INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
+  INPUT_GITHUB_TOKEN="<REDACTED>" \
+  INPUT_CLIENT_PAYLOAD='{}' \
+  busybox sh entrypoint.sh
 ```
 
 You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:
@@ -110,7 +110,7 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
 If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.3.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.0
   with:
     owner: keithconvictional
     repo: myrepo
