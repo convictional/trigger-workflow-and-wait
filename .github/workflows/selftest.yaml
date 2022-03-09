@@ -1,0 +1,17 @@
+name: Self-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        type: boolean
+        default: false
+        description: A pointless checkbox.
+
+jobs:
+  wait:
+    name: Wait
+    runs-on: ubuntu-latest
+    steps:
+    - name: Do nothing
+      run: sleep 30
