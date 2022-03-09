@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
 usage_docs() {
@@ -16,9 +16,9 @@ GITHUB_SERVER_URL="${SERVER_URL:-https://github.com}"
 
 validate_args() {
   wait_interval=10 # Waits for 10 seconds
-  if [ "${INPUT_WAITING_INTERVAL}" ]
+  if [ "${INPUT_WAIT_INTERVAL}" ]
   then
-    wait_interval=${INPUT_WAITING_INTERVAL}
+    wait_interval=${INPUT_WAIT_INTERVAL}
   fi
 
   propagate_failure=true
@@ -37,6 +37,12 @@ validate_args() {
   if [ -n "${INPUT_WAIT_WORKFLOW}" ]
   then
     wait_workflow=${INPUT_WAIT_WORKFLOW}
+  fi
+
+  last_workflow_interval=0
+  if [ -n "${INPUT_LAST_WORKFLOW_INTERVAL}" ]
+  then
+    last_workflow_interval=${INPUT_LAST_WORKFLOW_INTERVAL}
   fi
 
   if [ -z "${INPUT_OWNER}" ]
@@ -69,10 +75,10 @@ validate_args() {
     exit 1
   fi
 
-  inputs=$(echo '{}' | jq -c)
-  if [ "${INPUT_INPUTS}" ]
+  client_payload=$(echo '{}' | jq)
+  if [ "${INPUT_CLIENT_PAYLOAD}" ]
   then
-    inputs=$(echo "${INPUT_INPUTS}" | jq -c)
+    client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq)
   fi
 
   ref="main"
@@ -82,71 +88,96 @@ validate_args() {
   fi
 }
 
-lets_wait() {
-  echo "Sleeping for ${wait_interval} seconds"
-  sleep $wait_interval
+api() {
+  path=$1; shift
+  if response=$(curl --fail-with-body -sSL \
+      "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
+      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+      -H 'Accept: application/vnd.github.v3+json' \
+      -H 'Content-Type: application/json' \
+      "$@")
+  then
+    echo "$response"
+  else
+    echo >&2 "api failed:"
+    echo >&2 "path: $path"
+    echo >&2 "response: $response"
+    exit 1
+  fi
+}
+
+# Return the ids of the most recent workflow runs, optionally filtered by user
+get_workflow_runs() {
+  since=${1:?}
+
+  query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+&actor=}${INPUT_GITHUB_USER}&per_page=100"
+
+  echo "Getting workflow runs using query: ${query}" >&2
+
+  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" |
+  jq '.workflow_runs[].id' |
+  sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
 }
 
 trigger_workflow() {
-  echo "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  START_TIME=$(date +%s)
+  SINCE=$(date -u -Iseconds -d "@$((START_TIME - 120))") # Two minutes ago, to overcome clock skew
 
-  curl --fail -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    -H "Accept: application/vnd.github.v3+json" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${inputs}}"
-  if [[ "$?" -gt 0 ]]; then
-    echo "Failed to call workflow_dispatch. Exiting."
-    exit 1
-  fi
-  lets_wait
+  OLD_RUNS=$(get_workflow_runs "$SINCE")
+
+  echo >&2 "Triggering workflow:"
+  echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+
+  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
+    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+
+  NEW_RUNS=$OLD_RUNS
+  while [ "$NEW_RUNS" = "$OLD_RUNS" ]
+  do
+    echo >&2 "Sleeping for ${wait_interval} seconds"
+    sleep "$wait_interval"
+    NEW_RUNS=$(get_workflow_runs "$SINCE")
+  done
+
+  # Return new run ids
+  join -v2 <(echo "$OLD_RUNS") <(echo "$NEW_RUNS")
 }
 
 wait_for_workflow_to_finish() {
-  # Find the id of the last run using filters to identify the workflow triggered by this action
-  echo "Getting the ID of the workflow..."
-  query="event=workflow_dispatch&status=queued"
-  if [ "$INPUT_GITHUB_USER" ]
-  then
-    query="${query}&actor=${INPUT_GITHUB_USER}"
-  fi
-  last_workflow="null"
-  while [[ "$last_workflow" == "null" ]]
-  do
-    echo "Using the following params to filter the workflow runs to get the triggered run id -"
-    echo "Query params: ${query}"
-    last_workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
-      -H 'Accept: application/vnd.github.antiope-preview+json' \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
-  done
-  last_workflow_id=$(echo "${last_workflow}" | jq '.id')
+  last_workflow_id=${1:?}
   last_workflow_url="${GITHUB_SERVER_URL}/${INPUT_OWNER}/${INPUT_REPO}/actions/runs/${last_workflow_id}"
+
+  echo "Waiting for workflow to finish:"
   echo "The workflow id is [${last_workflow_id}]."
   echo "The workflow logs can be found at ${last_workflow_url}"
   echo "::set-output name=workflow_id::${last_workflow_id}"
   echo "::set-output name=workflow_url::${last_workflow_url}"
   echo ""
-  conclusion=$(echo "${last_workflow}" | jq '.conclusion')
-  status=$(echo "${last_workflow}" | jq '.status')
 
-  while [[ "${conclusion}" == "null" && "${status}" != "\"completed\"" ]]
+  conclusion=null
+  status=
+
+  while [[ "${conclusion}" == "null" && "${status}" != "completed" ]]
   do
-    lets_wait
-    workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
-      -H 'Accept: application/vnd.github.antiope-preview+json' \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '.workflow_runs[] | select(.id == '${last_workflow_id}')')
-    conclusion=$(echo "${workflow}" | jq '.conclusion')
-    status=$(echo "${workflow}" | jq '.status')
+    echo "Sleeping for \"${wait_interval}\" seconds"
+    sleep "${wait_interval}"
+
+    workflow=$(api "runs/$last_workflow_id")
+    conclusion=$(echo "${workflow}" | jq -r '.conclusion')
+    status=$(echo "${workflow}" | jq -r '.status')
+
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
   done
 
-  if [[ "${conclusion}" == "\"success\"" && "${status}" == "\"completed\"" ]]
+  if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
   then
     echo "Yes, success"
   else
     # Alternative "failure"
-    echo "Conclusion is not success, its [${conclusion}]."
+    echo "Conclusion is not success, it's [${conclusion}]."
+
     if [ "${propagate_failure}" = true ]
     then
       echo "Propagating failure to upstream job"
@@ -160,14 +191,17 @@ main() {
 
   if [ "${trigger_workflow}" = true ]
   then
-    trigger_workflow
+    run_ids=$(trigger_workflow)
   else
     echo "Skipping triggering the workflow."
   fi
 
   if [ "${wait_workflow}" = true ]
   then
-    wait_for_workflow_to_finish
+    for run_id in $run_ids
+    do
+      wait_for_workflow_to_finish "$run_id"
+    done
   else
     echo "Skipping waiting for workflow."
   fi
