@@ -75,10 +75,10 @@ validate_args() {
     exit 1
   fi
 
-  client_payload=$(echo '{}' | jq)
+  client_payload=$(echo '{}' | jq -c)
   if [ "${INPUT_CLIENT_PAYLOAD}" ]
   then
-    client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq)
+    client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq -c)
   fi
 
   ref="main"
@@ -86,6 +86,11 @@ validate_args() {
   then
     ref="${INPUT_REF}"
   fi
+}
+
+lets_wait() {
+  echo "Sleeping for ${wait_interval} seconds"
+  sleep $wait_interval
 }
 
 api() {
@@ -135,8 +140,7 @@ trigger_workflow() {
   NEW_RUNS=$OLD_RUNS
   while [ "$NEW_RUNS" = "$OLD_RUNS" ]
   do
-    echo >&2 "Sleeping for ${wait_interval} seconds"
-    sleep "$wait_interval"
+    lets_wait
     NEW_RUNS=$(get_workflow_runs "$SINCE")
   done
 
@@ -160,8 +164,7 @@ wait_for_workflow_to_finish() {
 
   while [[ "${conclusion}" == "null" && "${status}" != "completed" ]]
   do
-    echo "Sleeping for \"${wait_interval}\" seconds"
-    sleep "${wait_interval}"
+    lets_wait
 
     workflow=$(api "runs/$last_workflow_id")
     conclusion=$(echo "${workflow}" | jq -r '.conclusion')
