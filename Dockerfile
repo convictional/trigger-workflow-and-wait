@@ -1,9 +1,8 @@
 # https://hub.docker.com/_/alpine
-FROM alpine:latest
+FROM alpine:3.15.0
 
-RUN apk update
-RUN apk --no-cache add curl
-RUN apk add jq
+RUN apk update && \
+    apk --no-cache add curl jq
 
 COPY entrypoint.sh /entrypoint.sh
 

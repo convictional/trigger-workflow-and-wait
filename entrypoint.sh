@@ -69,10 +69,10 @@ validate_args() {
     exit 1
   fi
 
-  inputs=$(echo '{}' | jq)
+  inputs=$(echo '{}' | jq -c)
   if [ "${INPUT_INPUTS}" ]
   then
-    inputs=$(echo "${INPUT_INPUTS}" | jq)
+    inputs=$(echo "${INPUT_INPUTS}" | jq -c)
   fi
 
   ref="main"
@@ -80,6 +80,11 @@ validate_args() {
   then
     ref="${INPUT_REF}"
   fi
+}
+
+lets_wait() {
+  echo "Sleeping for ${wait_interval} seconds"
+  sleep $wait_interval
 }
 
 trigger_workflow() {
@@ -90,8 +95,11 @@ trigger_workflow() {
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
     --data "{\"ref\":\"${ref}\",\"inputs\":${inputs}}"
-  echo "Sleeping for ${wait_interval} seconds"
-  sleep $wait_interval
+  if [[ "$?" -gt 0 ]]; then
+    echo "Failed to call workflow_dispatch. Exiting."
+    exit 1
+  fi
+  lets_wait
 }
 
 wait_for_workflow_to_finish() {
@@ -123,8 +131,7 @@ wait_for_workflow_to_finish() {
 
   while [[ "${conclusion}" == "null" && "${status}" != "\"completed\"" ]]
   do
-    echo "Sleeping for \"${wait_interval}\" seconds"
-    sleep "${wait_interval}"
+    lets_wait
     workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '.workflow_runs[] | select(.id == '${last_workflow_id}')')
