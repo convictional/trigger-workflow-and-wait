@@ -39,12 +39,6 @@ validate_args() {
     wait_workflow=${INPUT_WAIT_WORKFLOW}
   fi
 
-  last_workflow_interval=0
-  if [ -n "${INPUT_LAST_WORKFLOW_INTERVAL}" ]
-  then
-    last_workflow_interval=${INPUT_LAST_WORKFLOW_INTERVAL}
-  fi
-
   if [ -z "${INPUT_OWNER}" ]
   then
     echo "Error: Owner is a required argument."
