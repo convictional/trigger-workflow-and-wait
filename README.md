@@ -22,7 +22,6 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
 | `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
 | `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
-| `last_workflow_interval` | False      | 0           | The number of seconds delay between checking for the last workflow. default: 0 |
 
 
 ## Example
@@ -53,7 +52,6 @@ When deploying an app you may need to deploy additional services, this Github Ac
     propagate_failure: false
     trigger_workflow: true
     wait_workflow: true
-    last_workflow_interval: 1
 ```
 
 
@@ -62,18 +60,18 @@ When deploying an app you may need to deploy additional services, this Github Ac
 You can test out the action locally by cloning the repository to your computer. You can run:
 
 ```shell
+INPUT_OWNER="keithconvictional" \
+INPUT_REPO="myrepo" \
+INPUT_GITHUB_TOKEN="<REDACTED>" \
+INPUT_GITHUB_USER="github-user" \
+INPUT_WORKFLOW_FILE_NAME="main.yml" \
+INPUT_REF="release-branch" \
 INPUT_WAIT_INTERVAL=10 \
-  INPUT_PROPAGATE_FAILURE=false \
-  INPUT_TRIGGER_WORKFLOW=true \
-  INPUT_WORKFLOW_FILE_NAME="main.yml" \
-  INPUT_GITHUB_USER="github-user" \
-  INPUT_WAIT_WORKFLOW=true \
-  INPUT_LAST_WORKFLOW_INTERVAL=1 \
-  INPUT_OWNER="keithconvictional" \
-  INPUT_REPO="trigger-workflow-and-wait-example-repo1" \
-  INPUT_GITHUB_TOKEN="<REDACTED>" \
-  INPUT_CLIENT_PAYLOAD='{}' \
-  busybox sh entrypoint.sh
+INPUT_CLIENT_PAYLOAD='{}' \
+INPUT_PROPAGATE_FAILURE=false \
+INPUT_TRIGGER_WORKFLOW=true \
+INPUT_WAIT_WORKFLOW=true \
+busybox sh entrypoint.sh
 ```
 
 You will have to create a Github Personal access token. You can create a test workflow to be executed. In a repository, add a new `main.yml` to `.github/workflows/`. The workflow will be:

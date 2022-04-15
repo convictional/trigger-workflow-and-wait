@@ -38,9 +38,6 @@ inputs:
   wait_workflow:
     description: 'Wait for workflow to finish. default: true'
     required: false
-  last_workflow_interval:
-    description: 'The number of seconds delay between checking for the last workflow. default: 0'
-    required: false
 outputs:
   workflow_id:
     description: The ID of the workflow that was triggered by this action

@@ -39,12 +39,6 @@ validate_args() {
     wait_workflow=${INPUT_WAIT_WORKFLOW}
   fi
 
-  last_workflow_interval=0
-  if [ -n "${INPUT_LAST_WORKFLOW_INTERVAL}" ]
-  then
-    last_workflow_interval=${INPUT_LAST_WORKFLOW_INTERVAL}
-  fi
-
   if [ -z "${INPUT_OWNER}" ]
   then
     echo "Error: Owner is a required argument."
@@ -111,6 +105,12 @@ api() {
   fi
 }
 
+lets_wait() {
+  local interval=${1:-$wait_interval}
+  echo >&2 "Sleeping for $interval seconds"
+  sleep "$interval"
+}
+
 # Return the ids of the most recent workflow runs, optionally filtered by user
 get_workflow_runs() {
   since=${1:?}
@@ -120,7 +120,7 @@ get_workflow_runs() {
   echo "Getting workflow runs using query: ${query}" >&2
 
   api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" |
-  jq '.workflow_runs[].id' |
+  jq -r '.workflow_runs[].id' |
   sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
 }
 
