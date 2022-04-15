@@ -29,7 +29,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### Simple
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.1
   with:
     owner: keithconvictional
     repo: myrepo
@@ -39,7 +39,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### All Options
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.1
   with:
     owner: keithconvictional
     repo: myrepo
@@ -108,7 +108,7 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
 If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.0
+- uses: convictional/trigger-workflow-and-wait@v1.6.1
   with:
     owner: keithconvictional
     repo: myrepo
