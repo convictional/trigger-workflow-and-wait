@@ -40,7 +40,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         context: .
     - name: Test
-      if: ${{ false && github.event_name == 'pull_request' }}
+      if: ${{ github.event_name == 'pull_request' }}
       uses: ./
       with:
         owner: ${{ github.repository_owner }}
