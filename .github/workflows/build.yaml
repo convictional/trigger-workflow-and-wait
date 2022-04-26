@@ -48,7 +48,6 @@ jobs:
           workflow_file_name: selftest.yaml
           client_payload: '{"test": "true"}'
           wait_interval: 11
-          last_workflow_interval: 5
           trigger_workflow: true
           wait_workflow: true
           propagate_failure: true
