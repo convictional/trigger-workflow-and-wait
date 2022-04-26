@@ -12,7 +12,7 @@ inputs:
     description: "The repository where the workflow is contained."
     required: true
   github_token:
-    description: "The Github access token with access to the repository. Its recommended you put it under secrets."
+    description: "The Github access token with access to the repository. It is recommended you put this token under secrets."
     required: true
   github_user:
     description: "The name of the github user whose access token is being used to trigger the workflow."
