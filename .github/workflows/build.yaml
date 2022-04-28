@@ -44,7 +44,7 @@ jobs:
           owner: ${{ github.repository_owner }}
           repo: trigger-workflow-and-wait
           ref: ${{ github.event.repository.default_branch || 'master' }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.SECRET_PERSONAL_TOKEN }}
           workflow_file_name: selftest.yaml
           client_payload: '{"test": "true"}'
           wait_interval: 11
