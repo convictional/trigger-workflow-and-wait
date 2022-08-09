@@ -132,10 +132,10 @@ trigger_workflow() {
 
   echo >&2 "Triggering workflow:"
   echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
-  echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+  echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":\"${client_payload}\"}"
 
   api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+    --data "{\"ref\":\"${ref}\",\"inputs\":\"${client_payload}\"}"
 
   NEW_RUNS=$OLD_RUNS
   while [ "$NEW_RUNS" = "$OLD_RUNS" ]
