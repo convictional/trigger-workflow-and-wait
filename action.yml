@@ -38,6 +38,10 @@ inputs:
   wait_workflow:
     description: 'Wait for workflow to finish. default: true'
     required: false
+  comment_downstream_url:
+    description: 'Comment API link for commenting the downstream job URL'
+    required: false
+    default: ''
 outputs:
   workflow_id:
     description: The ID of the workflow that was triggered by this action
