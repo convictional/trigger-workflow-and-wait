@@ -172,6 +172,7 @@ wait_for_workflow_to_finish() {
 
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
+    echo "::set-output name=conclusion::${conclusion}"
   done
 
   if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
