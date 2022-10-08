@@ -101,7 +101,11 @@ api() {
     echo >&2 "api failed:"
     echo >&2 "path: $path"
     echo >&2 "response: $response"
-    exit 1
+    if [[ "$response" == *'"Server Error"'* ]]; then 
+      echo "Server error - trying again"
+    else
+      exit 1
+    fi
   fi
 }
 
