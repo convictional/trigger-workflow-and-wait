@@ -148,6 +148,19 @@ trigger_workflow() {
   join -v2 <(echo "$OLD_RUNS") <(echo "$NEW_RUNS")
 }
 
+comment_downstream_link() {
+  if response=$(curl --fail-with-body -sSL -X POST \
+      "${INPUT_COMMENT_DOWNSTREAM_URL}" \
+      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+      -H 'Accept: application/vnd.github.v3+json' \
+      -d "{\"body\": \"Running downstream job at $1\"}")
+  then
+    echo "$response"
+  else
+    echo >&2 "failed to comment to ${INPUT_COMMENT_DOWNSTREAM_URL}:"
+  fi
+}
+
 wait_for_workflow_to_finish() {
   last_workflow_id=${1:?}
   last_workflow_url="${GITHUB_SERVER_URL}/${INPUT_OWNER}/${INPUT_REPO}/actions/runs/${last_workflow_id}"
@@ -158,6 +171,10 @@ wait_for_workflow_to_finish() {
   echo "::set-output name=workflow_id::${last_workflow_id}"
   echo "::set-output name=workflow_url::${last_workflow_url}"
   echo ""
+
+  if [ -n "${INPUT_COMMENT_DOWNSTREAM_URL}" ]; then
+    comment_downstream_link ${last_workflow_url}
+  fi
 
   conclusion=null
   status=

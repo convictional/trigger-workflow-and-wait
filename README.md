@@ -22,6 +22,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
 | `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
 | `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
+| `comment_downstream_url` | False      | ''          | A comments API URL to comment the current downstream job URL to. Default: no comment |
 
 
 ## Example
@@ -54,6 +55,16 @@ When deploying an app you may need to deploy additional services, this Github Ac
     wait_workflow: true
 ```
 
+### Comment the current running workflow URL for a PR
+
+```yaml
+- uses: convictional/trigger-workflow-and-wait@v1.6.1
+  with:
+    owner: keithconvictional
+    repo: myrepo
+    github_token: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+    comment_downstream_url: ${{ github.event.pull_request.comments_url }}
+```
 
 ## Testing
 
