@@ -101,7 +101,7 @@ api() {
     echo >&2 "api failed:"
     echo >&2 "path: $path"
     echo >&2 "response: $response"
-    if [[ "$response" == *'"Server Error"'* ]]; then 
+    if [[ "$response" == *'"Server Error"'* ]]; then
       echo "Server error - trying again"
     else
       exit 1
@@ -172,8 +172,8 @@ wait_for_workflow_to_finish() {
   echo "Waiting for workflow to finish:"
   echo "The workflow id is [${last_workflow_id}]."
   echo "The workflow logs can be found at ${last_workflow_url}"
-  echo "::set-output name=workflow_id::${last_workflow_id}"
-  echo "::set-output name=workflow_url::${last_workflow_url}"
+  echo "workflow_id=${last_workflow_id}" >> $GITHUB_OUTPUT
+  echo "workflow_url=${last_workflow_url}" >> $GITHUB_OUTPUT
   echo ""
 
   if [ -n "${INPUT_COMMENT_DOWNSTREAM_URL}" ]; then
@@ -193,7 +193,7 @@ wait_for_workflow_to_finish() {
 
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
-    echo "::set-output name=conclusion::${conclusion}"
+    echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
   done
 
   if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
