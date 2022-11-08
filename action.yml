@@ -42,6 +42,10 @@ inputs:
     description: 'Comment API link for commenting the downstream job URL'
     required: false
     default: ''
+  comment_github_token:
+    description: "The Github access token with access to the repository for comment URL. It is recommended you put this token under secrets."
+    required: false
+    default: ${{ github.token }}
 outputs:
   workflow_id:
     description: The ID of the workflow that was triggered by this action

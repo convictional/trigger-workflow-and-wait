@@ -23,6 +23,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
 | `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
 | `comment_downstream_url` | False      | ''          | A comments API URL to comment the current downstream job URL to. Default: no comment |
+| `comment_github_token` | False      | '${{github.token}}          | token used for pull_request comments |
 
 
 ## Example
