@@ -155,7 +155,7 @@ trigger_workflow() {
 comment_downstream_link() {
   if response=$(curl --fail-with-body -sSL -X POST \
       "${INPUT_COMMENT_DOWNSTREAM_URL}" \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+      -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
       -H 'Accept: application/vnd.github.v3+json' \
       -d "{\"body\": \"Running downstream job at $1\"}")
   then

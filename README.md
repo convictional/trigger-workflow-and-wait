@@ -22,7 +22,8 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
 | `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
 | `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
-| `comment_downstream_url` | False      | ''          | A comments API URL to comment the current downstream job URL to. Default: no comment |
+| `comment_downstream_url` | False      | ``          | A comments API URL to comment the current downstream job URL to. Default: no comment |
+| `comment_github_token`   | False      | `${{github.token}}`          | token used for pull_request comments |
 
 
 ## Example
