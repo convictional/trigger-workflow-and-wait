@@ -84,7 +84,7 @@ validate_args() {
 
 lets_wait() {
   echo "Sleeping for ${wait_interval} seconds"
-  sleep $wait_interval
+  sleep "$wait_interval"
 }
 
 api() {
