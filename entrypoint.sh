@@ -193,14 +193,15 @@ wait_for_workflow_to_finish() {
 
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
-    echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
   done
 
   if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
   then
+    echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
     echo "Yes, success"
   else
     # Alternative "failure"
+    echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
     echo "Conclusion is not success, it's [${conclusion}]."
 
     if [ "${propagate_failure}" = true ]
