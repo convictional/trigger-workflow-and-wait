@@ -12,6 +12,7 @@ on:
     tags:
       - v**
 
+      
 jobs:
   build-docker:
     name: Build docker image
