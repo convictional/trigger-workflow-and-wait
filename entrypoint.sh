@@ -16,45 +16,38 @@ GITHUB_SERVER_URL="${SERVER_URL:-https://github.com}"
 
 validate_args() {
   wait_interval=10 # Waits for 10 seconds
-  if [ "${INPUT_WAIT_INTERVAL}" ]
-  then
+  if [ "${INPUT_WAIT_INTERVAL}" ]; then
     wait_interval=${INPUT_WAIT_INTERVAL}
   fi
 
   propagate_failure=true
-  if [ -n "${INPUT_PROPAGATE_FAILURE}" ]
-  then
+  if [ -n "${INPUT_PROPAGATE_FAILURE}" ]; then
     propagate_failure=${INPUT_PROPAGATE_FAILURE}
   fi
 
   trigger_workflow=true
-  if [ -n "${INPUT_TRIGGER_WORKFLOW}" ]
-  then
+  if [ -n "${INPUT_TRIGGER_WORKFLOW}" ]; then
     trigger_workflow=${INPUT_TRIGGER_WORKFLOW}
   fi
 
   wait_workflow=true
-  if [ -n "${INPUT_WAIT_WORKFLOW}" ]
-  then
+  if [ -n "${INPUT_WAIT_WORKFLOW}" ]; then
     wait_workflow=${INPUT_WAIT_WORKFLOW}
   fi
 
-  if [ -z "${INPUT_OWNER}" ]
-  then
+  if [ -z "${INPUT_OWNER}" ]; then
     echo "Error: Owner is a required argument."
     usage_docs
     exit 1
   fi
 
-  if [ -z "${INPUT_REPO}" ]
-  then
+  if [ -z "${INPUT_REPO}" ]; then
     echo "Error: Repo is a required argument."
     usage_docs
     exit 1
   fi
 
-  if [ -z "${INPUT_GITHUB_TOKEN}" ]
-  then
+  if [ -z "${INPUT_GITHUB_TOKEN}" ]; then
     echo "Error: Github token is required. You can head over settings and"
     echo "under developer, you can create a personal access tokens. The"
     echo "token requires repo access."
@@ -62,22 +55,19 @@ validate_args() {
     exit 1
   fi
 
-  if [ -z "${INPUT_WORKFLOW_FILE_NAME}" ]
-  then
+  if [ -z "${INPUT_WORKFLOW_FILE_NAME}" ]; then
     echo "Error: Workflow File Name is required"
     usage_docs
     exit 1
   fi
 
   client_payload=$(echo '{}' | jq -c)
-  if [ "${INPUT_CLIENT_PAYLOAD}" ]
-  then
+  if [ "${INPUT_CLIENT_PAYLOAD}" ]; then
     client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq -c)
   fi
 
   ref="main"
-  if [ "$INPUT_REF" ]
-  then
+  if [ "$INPUT_REF" ]; then
     ref="${INPUT_REF}"
   fi
 }
@@ -88,20 +78,20 @@ lets_wait() {
 }
 
 api() {
-  path=$1; shift
+  path=$1
+  shift
   if response=$(curl --fail-with-body -sSL \
-      "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
-      -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
-      -H 'Accept: application/vnd.github.v3+json' \
-      -H 'Content-Type: application/json' \
-      "$@")
-  then
+    "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
+    -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
+    -H 'Accept: application/vnd.github.v3+json' \
+    -H 'Content-Type: application/json' \
+    "$@"); then
     echo "$response"
   else
     echo >&2 "api failed:"
     echo >&2 "path: $path"
     echo >&2 "response: $response"
-    if [[ "$response" == *'"Server Error"'* ]]; then 
+    if [[ "$response" == *'"Server Error"'* ]]; then
       echo "Server error - trying again"
     else
       exit 1
@@ -123,9 +113,14 @@ get_workflow_runs() {
 
   echo "Getting workflow runs using query: ${query}" >&2
 
-  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" |
-  jq -r '.workflow_runs[].id' |
-  sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
+  runs=$(api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}")
+
+  # Check if the output is empty or contains an error message
+  if [ -z "$runs" ] || [[ $runs == *"message"* ]]; then
+    echo "" # Return an empty string or a default value
+  else
+    echo "$runs" | jq -r '.workflow_runs[].id' | sort
+  fi
 }
 
 trigger_workflow() {
@@ -142,8 +137,7 @@ trigger_workflow() {
     --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
 
   NEW_RUNS=$OLD_RUNS
-  while [ "$NEW_RUNS" = "$OLD_RUNS" ]
-  do
+  while [ "$NEW_RUNS" = "$OLD_RUNS" ]; do
     lets_wait
     NEW_RUNS=$(get_workflow_runs "$SINCE")
   done
@@ -154,11 +148,10 @@ trigger_workflow() {
 
 comment_downstream_link() {
   if response=$(curl --fail-with-body -sSL -X POST \
-      "${INPUT_COMMENT_DOWNSTREAM_URL}" \
-      -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
-      -H 'Accept: application/vnd.github.v3+json' \
-      -d "{\"body\": \"Running downstream job at $1\"}")
-  then
+    "${INPUT_COMMENT_DOWNSTREAM_URL}" \
+    -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
+    -H 'Accept: application/vnd.github.v3+json' \
+    -d "{\"body\": \"Running downstream job at $1\"}"); then
     echo "$response"
   else
     echo >&2 "failed to comment to ${INPUT_COMMENT_DOWNSTREAM_URL}:"
@@ -172,8 +165,8 @@ wait_for_workflow_to_finish() {
   echo "Waiting for workflow to finish:"
   echo "The workflow id is [${last_workflow_id}]."
   echo "The workflow logs can be found at ${last_workflow_url}"
-  echo "workflow_id=${last_workflow_id}" >> $GITHUB_OUTPUT
-  echo "workflow_url=${last_workflow_url}" >> $GITHUB_OUTPUT
+  echo "workflow_id=${last_workflow_id}" >>$GITHUB_OUTPUT
+  echo "workflow_url=${last_workflow_url}" >>$GITHUB_OUTPUT
   echo ""
 
   if [ -n "${INPUT_COMMENT_DOWNSTREAM_URL}" ]; then
@@ -183,8 +176,7 @@ wait_for_workflow_to_finish() {
   conclusion=null
   status=
 
-  while [[ "${conclusion}" == "null" && "${status}" != "completed" ]]
-  do
+  while [[ "${conclusion}" == "null" && "${status}" != "completed" ]]; do
     lets_wait
 
     workflow=$(api "runs/$last_workflow_id")
@@ -193,18 +185,16 @@ wait_for_workflow_to_finish() {
 
     echo "Checking conclusion [${conclusion}]"
     echo "Checking status [${status}]"
-    echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
+    echo "conclusion=${conclusion}" >>$GITHUB_OUTPUT
   done
 
-  if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
-  then
+  if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]; then
     echo "Yes, success"
   else
     # Alternative "failure"
     echo "Conclusion is not success, it's [${conclusion}]."
 
-    if [ "${propagate_failure}" = true ]
-    then
+    if [ "${propagate_failure}" = true ]; then
       echo "Propagating failure to upstream job"
       exit 1
     fi
@@ -214,17 +204,14 @@ wait_for_workflow_to_finish() {
 main() {
   validate_args
 
-  if [ "${trigger_workflow}" = true ]
-  then
+  if [ "${trigger_workflow}" = true ]; then
     run_ids=$(trigger_workflow)
   else
     echo "Skipping triggering the workflow."
   fi
 
-  if [ "${wait_workflow}" = true ]
-  then
-    for run_id in $run_ids
-    do
+  if [ "${wait_workflow}" = true ]; then
+    for run_id in $run_ids; do
       wait_for_workflow_to_finish "$run_id"
     done
   else
