@@ -53,6 +53,8 @@ outputs:
     description: The URL of the workflow that was triggered by this action
   conclusion:
     description: Conclusion of the job, i.e pass/failure
+  workflow_run_id:
+    description: The ID of the triggered workflow run triggered by this action
 runs:
   using: 'docker'
   image: 'Dockerfile'
