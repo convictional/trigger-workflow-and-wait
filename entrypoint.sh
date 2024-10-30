@@ -200,6 +200,9 @@ wait_for_workflow_to_finish() {
   workflow=$(api "runs/$last_workflow_id")
   workflow_run_id=$(echo "${workflow}" | jq -r '.id')
   echo "workflow_run_id=${workflow_run_id}" >> $GITHUB_OUTPUT
+  head_sha=$(echo "${workflow}" | jq -r '.head_sha')
+  echo "full_sha=${full_sha}" >> $GITHUB_OUTPUT
+  echo "short_sha=${full_sha:0:10}" >> $GITHUB_OUTPUT
 
   if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
   then
