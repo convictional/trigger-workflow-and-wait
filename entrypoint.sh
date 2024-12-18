@@ -75,7 +75,7 @@ validate_args() {
     client_payload=$(echo "${INPUT_CLIENT_PAYLOAD}" | jq -c)
   fi
 
-  ref="main"
+  ref="master"
   if [ "$INPUT_REF" ]
   then
     ref="${INPUT_REF}"

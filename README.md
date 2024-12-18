@@ -9,21 +9,21 @@ When deploying an app you may need to deploy additional services, this Github Ac
 
 ## Arguments
 
-| Argument Name            | Required   | Default     | Description           |
-| ---------------------    | ---------- | ----------- | --------------------- |
-| `owner`                  | True       | N/A         | The owner of the repository where the workflow is contained. |
-| `repo`                   | True       | N/A         | The repository where the workflow is contained. |
-| `github_token`           | True       | N/A         | The Github access token with access to the repository. Its recommended you put it under secrets. |
-| `workflow_file_name`     | True       | N/A         | The reference point. For example, you could use main.yml. |
-| `github_user`            | False      | N/A         | The name of the github user whose access token is being used to trigger the workflow. |
-| `ref`                    | False      | main        | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
-| `wait_interval`          | False      | 10          | The number of seconds delay between checking for result of run. |
-| `client_payload`         | False      | `{}`        | Payload to pass to the workflow, must be a JSON string |
-| `propagate_failure`      | False      | `true`      | Fail current job if downstream job fails. |
-| `trigger_workflow`       | False      | `true`      | Trigger the specified workflow. |
-| `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
-| `comment_downstream_url` | False      | ``          | A comments API URL to comment the current downstream job URL to. Default: no comment |
-| `comment_github_token`   | False      | `${{github.token}}`          | token used for pull_request comments |
+| Argument Name            | Required   | Default             | Description           |
+| ---------------------    | ---------- |---------------------| --------------------- |
+| `owner`                  | True       | N/A                 | The owner of the repository where the workflow is contained. |
+| `repo`                   | True       | N/A                 | The repository where the workflow is contained. |
+| `github_token`           | True       | N/A                 | The Github access token with access to the repository. Its recommended you put it under secrets. |
+| `workflow_file_name`     | True       | N/A                 | The reference point. For example, you could use main.yml. |
+| `github_user`            | False      | N/A                 | The name of the github user whose access token is being used to trigger the workflow. |
+| `ref`                    | False      | master              | The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. |
+| `wait_interval`          | False      | 10                  | The number of seconds delay between checking for result of run. |
+| `client_payload`         | False      | `{}`                | Payload to pass to the workflow, must be a JSON string |
+| `propagate_failure`      | False      | `true`              | Fail current job if downstream job fails. |
+| `trigger_workflow`       | False      | `true`              | Trigger the specified workflow. |
+| `wait_workflow`          | False      | `true`              | Wait for workflow to finish. |
+| `comment_downstream_url` | False      | ``                  | A comments API URL to comment the current downstream job URL to. Default: no comment |
+| `comment_github_token`   | False      | `${{github.token}}` | token used for pull_request comments |
 
 
 ## Example
@@ -31,7 +31,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### Simple
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
+- uses: hibobio/trigger-workflow-and-wait@v1.6.5.1
   with:
     owner: keithconvictional
     repo: myrepo
@@ -41,7 +41,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### All Options
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
+- uses: hibobio/trigger-workflow-and-wait@v1.6.5.1
   with:
     owner: keithconvictional
     repo: myrepo
@@ -59,7 +59,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 ### Comment the current running workflow URL for a PR
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
+- uses: hibobio/trigger-workflow-and-wait@v1.6.5.1
   with:
     owner: keithconvictional
     repo: myrepo
@@ -120,7 +120,7 @@ You can see the example [here](https://github.com/keithconvictional/trigger-work
 If you do not want the latest build all of the time, please use a versioned copy of the Github Action. You specify the version after the `@` sign.
 
 ```yaml
-- uses: convictional/trigger-workflow-and-wait@v1.6.1
+- uses: hibobio/trigger-workflow-and-wait@v1.6.5.1
   with:
     owner: keithconvictional
     repo: myrepo
