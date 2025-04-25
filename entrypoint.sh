@@ -159,7 +159,7 @@ trigger_workflow() {
 }
 
 comment_downstream_link() {
-  if response=$(curl $input_retry --fail-with-body -sSL -X POST \
+  if response=$(curl --retry $input_retry --fail-with-body -sSL -X POST \
       "${INPUT_COMMENT_DOWNSTREAM_URL}" \
       -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
       -H 'Accept: application/vnd.github.v3+json' \
