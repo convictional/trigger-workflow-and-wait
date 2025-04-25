@@ -21,10 +21,10 @@ validate_args() {
     wait_interval=${INPUT_WAIT_INTERVAL}
   fi
 
-  retry=0
+  input_retry=0
   if [ -z "${INPUT_RETRY}" ]
   then
-    retry=${INPUT_RETRY}
+    input_retry=${INPUT_RETRY}
   fi
 
   propagate_failure=true
