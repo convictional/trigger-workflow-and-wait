@@ -21,6 +21,12 @@ validate_args() {
     wait_interval=${INPUT_WAIT_INTERVAL}
   fi
 
+  retry=0
+  if [ -z "${INPUT_RETRY}" ]
+  then
+    retry=${INPUT_RETRY}
+  fi
+
   propagate_failure=true
   if [ -n "${INPUT_PROPAGATE_FAILURE}" ]
   then
@@ -89,7 +95,7 @@ lets_wait() {
 
 api() {
   path=$1; shift
-  if response=$(curl --fail-with-body -sSL \
+  if response=$(curl --retry "$input_retry" --fail-with-body -sSL \
       "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
       -H 'Accept: application/vnd.github.v3+json' \
@@ -153,7 +159,7 @@ trigger_workflow() {
 }
 
 comment_downstream_link() {
-  if response=$(curl --fail-with-body -sSL -X POST \
+  if response=$(curl $input_retry --fail-with-body -sSL -X POST \
       "${INPUT_COMMENT_DOWNSTREAM_URL}" \
       -H "Authorization: Bearer ${INPUT_COMMENT_GITHUB_TOKEN}" \
       -H 'Accept: application/vnd.github.v3+json' \

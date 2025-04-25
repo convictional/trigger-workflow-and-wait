@@ -42,6 +42,9 @@ inputs:
     description: 'Comment API link for commenting the downstream job URL'
     required: false
     default: ''
+  retry:
+    description: 'Number of times to retry the workflow if it fails. default: 0'
+    required: false
   comment_github_token:
     description: "The Github access token with access to the repository for comment URL. It is recommended you put this token under secrets."
     required: false
