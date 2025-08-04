@@ -89,6 +89,18 @@ lets_wait() {
 
 api() {
   path=$1; shift
+  echo "this is a test" >&2
+  echo $INPUT_OWNER >&2
+  echo $INPUT_REPO >&2
+  echo $INPUT_GITHUB_TOKEN >&2
+  echo $GITHUB_API_URL >&2
+  echo $path >&2  
+  #INPUT_OWNER="ra-ftds"
+  #INPUT_REPO="ra-provision-workflows"
+  #path="workflows/save-tenants-versions.yaml/runs?event=workflow_dispatch&created=>=2025-08-04T17:38:44+00:00&actor=&per_page=100"
+  echo $path >&2
+  echo $INPUT_OWNER >&2
+  echo $INPUT_REPO >&2
   if response=$(curl --fail-with-body -sSL \
       "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/$path" \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
@@ -96,7 +108,7 @@ api() {
       -H 'Content-Type: application/json' \
       "$@")
   then
-    echo "$response"
+    echo "$response" >&2
   else
     echo >&2 "api failed:"
     echo >&2 "path: $path"
@@ -122,10 +134,12 @@ get_workflow_runs() {
   query="event=workflow_dispatch&created=>=$since${INPUT_GITHUB_USER+&actor=}${INPUT_GITHUB_USER}&per_page=100"
 
   echo "Getting workflow runs using query: ${query}" >&2
+  echo "this is a test v2" >&2
 
   api "workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" |
   jq -r '.workflow_runs[].id' |
   sort # Sort to ensure repeatable order, and lexicographically for compatibility with join
+  sleep 500
 }
 
 trigger_workflow() {
