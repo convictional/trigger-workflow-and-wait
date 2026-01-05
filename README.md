@@ -1,3 +1,5 @@
+Update January 2026: This repository is now archived.
+
 # Trigger Workflow and Wait
 
 Github Action for trigger a workflow from another workflow. The action then waits for a response.
