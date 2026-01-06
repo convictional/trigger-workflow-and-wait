@@ -138,18 +138,10 @@ trigger_workflow() {
   echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
   echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
 
-  api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+  dispatch=$(api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
+    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}")
+  echo "${dispatch}" | jq -r '.workflow_run_id'
 
-  NEW_RUNS=$OLD_RUNS
-  while [ "$NEW_RUNS" = "$OLD_RUNS" ]
-  do
-    lets_wait
-    NEW_RUNS=$(get_workflow_runs "$SINCE")
-  done
-
-  # Return new run ids
-  join -v2 <(echo "$OLD_RUNS") <(echo "$NEW_RUNS")
 }
 
 comment_downstream_link() {
@@ -216,17 +208,14 @@ main() {
 
   if [ "${trigger_workflow}" = true ]
   then
-    run_ids=$(trigger_workflow)
+    run_id=$(trigger_workflow)
   else
     echo "Skipping triggering the workflow."
   fi
 
   if [ "${wait_workflow}" = true ]
   then
-    for run_id in $run_ids
-    do
-      wait_for_workflow_to_finish "$run_id"
-    done
+    wait_for_workflow_to_finish "$run_id"
   else
     echo "Skipping waiting for workflow."
   fi
