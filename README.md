@@ -26,6 +26,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
 | `wait_workflow`          | False      | `true`      | Wait for workflow to finish. |
 | `comment_downstream_url` | False      | ``          | A comments API URL to comment the current downstream job URL to. Default: no comment |
 | `comment_github_token`   | False      | `${{github.token}}`          | token used for pull_request comments |
+| `retry`                  | False      | 0           |  Number of retries if the action fails to get status of downstream workflow |
 
 
 ## Example
@@ -56,6 +57,7 @@ When deploying an app you may need to deploy additional services, this Github Ac
     propagate_failure: false
     trigger_workflow: true
     wait_workflow: true
+    retry: 3
 ```
 
 ### Comment the current running workflow URL for a PR
