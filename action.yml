@@ -53,6 +53,12 @@ outputs:
     description: The URL of the workflow that was triggered by this action
   conclusion:
     description: Conclusion of the job, i.e pass/failure
+  workflow_run_id:
+    description: The ID of the triggered workflow run triggered by this action
+  full_sha:
+    description: The full SHA of commit that triggered the workflow
+  short_sha:
+    description: The short SHA of commit that triggered the workflow first 10 chars
 runs:
   using: 'docker'
   image: 'Dockerfile'

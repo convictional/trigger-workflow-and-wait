@@ -101,7 +101,7 @@ api() {
     echo >&2 "api failed:"
     echo >&2 "path: $path"
     echo >&2 "response: $response"
-    if [[ "$response" == *'"Server Error"'* ]]; then 
+    if [[ "$response" == *'"Server Error"'* ]]; then
       echo "Server error - trying again"
     else
       exit 1
@@ -195,6 +195,14 @@ wait_for_workflow_to_finish() {
     echo "Checking status [${status}]"
     echo "conclusion=${conclusion}" >> $GITHUB_OUTPUT
   done
+
+  # Add the run ID to the outputs of the action
+  workflow=$(api "runs/$last_workflow_id")
+  workflow_run_id=$(echo "${workflow}" | jq -r '.id')
+  echo "workflow_run_id=${workflow_run_id}" >> $GITHUB_OUTPUT
+  head_sha=$(echo "${workflow}" | jq -r '.head_sha')
+  echo "full_sha=${head_sha}" >> $GITHUB_OUTPUT
+  echo "short_sha=${head_sha:0:10}" >> $GITHUB_OUTPUT
 
   if [[ "${conclusion}" == "success" && "${status}" == "completed" ]]
   then
