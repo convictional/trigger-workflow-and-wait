@@ -101,7 +101,7 @@ api() {
     echo >&2 "api failed:"
     echo >&2 "path: $path"
     echo >&2 "response: $response"
-    if [[ "$response" == *'"Server Error"'* ]]; then 
+    if [[ "$response" == *'"Server Error"'* ]]; then
       echo "Server error - trying again"
     else
       exit 1
@@ -139,7 +139,7 @@ trigger_workflow() {
   echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
 
   api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}" > /dev/null
 
   NEW_RUNS=$OLD_RUNS
   while [ "$NEW_RUNS" = "$OLD_RUNS" ]
