@@ -51,3 +51,4 @@ jobs:
           trigger_workflow: true
           wait_workflow: true
           propagate_failure: true
+          summarize: true
