@@ -134,12 +134,15 @@ trigger_workflow() {
 
   OLD_RUNS=$(get_workflow_runs "$SINCE")
 
-  echo >&2 "Triggering workflow:"
-  echo >&2 "  workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
-  echo >&2 "  {\"ref\":\"${ref}\",\"inputs\":${client_payload}}"
+  trigger_path="workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  payload="{\"ref\":\"${ref}\",\"inputs\":${client_payload},\"return_run_details\":true}"
 
-  dispatch=$(api "workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
-    --data "{\"ref\":\"${ref}\",\"inputs\":${client_payload}}")
+  echo >&2 "Triggering workflow:"
+  echo >&2 "  ${trigger_path}"
+  echo >&2 "  ${payload}"
+
+  dispatch=$(api "${trigger_path}" \
+    --data "${payload}")
   echo "${dispatch}" | jq -r '.workflow_run_id'
 
 }
